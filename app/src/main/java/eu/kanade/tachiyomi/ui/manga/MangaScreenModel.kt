@@ -37,6 +37,7 @@ import eu.kanade.domain.manga.model.PagePreview
 import eu.kanade.domain.manga.model.ScanlatorFilter
 import eu.kanade.domain.manga.model.chaptersFiltered
 import eu.kanade.domain.manga.model.downloadedFilter
+import eu.kanade.domain.manga.model.sortedByOutput
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.domain.track.interactor.AddTracks
@@ -1940,6 +1941,19 @@ class MangaScreenModel(
         screenModelScope.launchIO {
             setScanlatorFilter.await(mangaId, scanlatorFilter)
         }
+    }
+
+    /**
+     * The order the filter dialog's Reset restores. Counted over every chapter, including those of
+     * hidden scanlators — the screen's own chapter list is already filtered, so it would undercount.
+     */
+    suspend fun getDefaultScanlatorOrder(scanlators: Collection<String?>): List<String?> = withIOContext {
+        val chapters = if (successState?.manga?.source == MERGED_SOURCE_ID) {
+            getMergedChaptersByMangaId.await(mangaId, dedupe = false, applyFilter = false)
+        } else {
+            getMangaAndChapters.awaitChapters(mangaId, applyFilter = false)
+        }
+        scanlators.sortedByOutput(chapters)
     }
 
     // SY -->

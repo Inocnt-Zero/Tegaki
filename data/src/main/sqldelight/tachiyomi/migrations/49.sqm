@@ -1,0 +1,9 @@
+-- Remove scanlator_filter rows whose manga no longer exists.
+--
+-- Foreign keys are switched on in onOpen, so a manga deleted at runtime cascades to its filter
+-- rows. Migrations run before onOpen, though, without enforcement: 46.sqm copied
+-- excluded_scanlators across wholesale, including rows already orphaned upstream (Komikku #1922
+-- cleans the same leftovers from the upstream tables). They are harmless today, but the AndroidX
+-- bundled SQLite driver Komikku is moving to checks foreign keys after every migration and refuses
+-- to open a database with any violation.
+DELETE FROM scanlator_filter WHERE manga_id NOT IN (SELECT _id FROM mangas);

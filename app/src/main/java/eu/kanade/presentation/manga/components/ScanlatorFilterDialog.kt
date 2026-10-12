@@ -39,6 +39,7 @@ private data class ScanlatorUiModel(val scanlator: String?, val excluded: Boolea
 fun ScanlatorFilterDialog(
     availableScanlators: Set<String>,
     scanlatorFilter: List<ScanlatorFilter>,
+    defaultOrder: List<String?>,
     onDismissRequest: () -> Unit,
     onConfirm: (List<ScanlatorFilter>) -> Unit,
 ) {
@@ -139,7 +140,14 @@ fun ScanlatorFilterDialog(
                         Text(text = stringResource(MR.strings.action_select_all))
                     }
                     TextButton(onClick = {
-                        items.forEachIndexed { index, item -> items[index] = item.copy(excluded = false) }
+                        // Restore the order a fresh entry would get as well as un-hiding, so Reset
+                        // undoes reordering too. Staged like Select all — nothing is saved until OK.
+                        val rank = defaultOrder.withIndex().associate { (index, scanlator) -> scanlator to index }
+                        val reset = items
+                            .map { it.copy(excluded = false) }
+                            .sortedBy { rank[it.scanlator] ?: Int.MAX_VALUE }
+                        items.clear()
+                        items.addAll(reset)
                     }) {
                         Text(text = stringResource(MR.strings.action_reset))
                     }

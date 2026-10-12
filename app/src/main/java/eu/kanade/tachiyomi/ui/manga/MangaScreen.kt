@@ -16,6 +16,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -645,9 +646,19 @@ class MangaScreen(
         }
 
         if (showScanlatorsDialog) {
+            val defaultScanlatorOrder by produceState(
+                emptyList<String?>(),
+                successState.availableScanlators,
+                successState.scanlatorFilter,
+            ) {
+                value = screenModel.getDefaultScanlatorOrder(
+                    successState.availableScanlators + successState.scanlatorFilter.map { it.scanlator },
+                )
+            }
             ScanlatorFilterDialog(
                 availableScanlators = successState.availableScanlators,
                 scanlatorFilter = successState.scanlatorFilter,
+                defaultOrder = defaultScanlatorOrder,
                 onDismissRequest = { showScanlatorsDialog = false },
                 onConfirm = screenModel::setScanlatorFilter,
             )

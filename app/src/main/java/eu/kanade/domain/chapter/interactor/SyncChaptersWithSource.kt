@@ -6,6 +6,7 @@ import eu.kanade.domain.manga.interactor.GetScanlatorFilter
 import eu.kanade.domain.manga.interactor.SetScanlatorFilter
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.manga.model.ScanlatorFilter
+import eu.kanade.domain.manga.model.sortedByOutput
 import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.tachiyomi.data.download.DownloadManager
 import eu.kanade.tachiyomi.data.download.DownloadProvider
@@ -270,15 +271,10 @@ class SyncChaptersWithSource(
         // costs nothing, whereas a lost exclusion is a preference the user has to notice and redo.
         val validFilter = existingFilter.filter { it.excluded || it.scanlator in currentScanlators }
 
-        // Rank newly discovered scanlators by how much they publish, then by how recently, so the
-        // most prolific and most current group lands nearest the top of the priority order.
-        val chapterCounts = (dbChapters + updatedToAdd)
-            .groupBy { it.scanlator?.takeUnless(String::isEmpty) }
+        // Rank newly discovered scanlators by output — see sortedByOutput, which the filter dialog's
+        // Reset also uses so both produce the same order.
         val newScanlators = (currentScanlators - validFilter.map { it.scanlator }.toSet())
-            .sortedWith(
-                compareByDescending<String?> { chapterCounts[it]?.size ?: 0 }
-                    .thenByDescending { chapterCounts[it]?.maxOfOrNull { chapter -> chapter.dateUpload } ?: 0L },
-            )
+            .sortedByOutput(dbChapters + updatedToAdd)
 
         if (validFilter.size != existingFilter.size || newScanlators.isNotEmpty()) {
             val maxPriority = validFilter.maxOfOrNull { it.priority } ?: -1
