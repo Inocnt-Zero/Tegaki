@@ -1,24 +1,10 @@
 -- NOTE: must update MERGED_SOURCE_ID (6969) here
 CREATE VIEW libraryView AS
 WITH FilteredChapters AS (
-    SELECT
-        C.*,
-        coalesce(SF.excluded, 0) AS filter_excluded,
-        ROW_NUMBER() OVER (
-            -- Unnumbered chapters (-1) are never copies of each other: give each its own partition.
-            PARTITION BY C.manga_id, C.chapter_number, CASE WHEN C.chapter_number < 0 THEN C._id END
-            ORDER BY
-                CASE WHEN coalesce(SF.excluded, 0) = 1 THEN 1 ELSE 0 END ASC,
-                coalesce(SF.priority, 10000000) ASC,
-                C._id ASC
-        ) AS rank,
-        CASE WHEN MWF.manga_id IS NOT NULL THEN 1 ELSE 0 END AS has_filter
+    -- Chapters the scanlator filter keeps, precomputed in scanlator_filtered_chapters.sq.
+    SELECT C.*
     FROM chapters C
-    LEFT JOIN scanlator_filter SF
-        ON C.manga_id = SF.manga_id
-        AND C.scanlator IS SF.scanlator
-    LEFT JOIN (SELECT DISTINCT manga_id FROM scanlator_filter) MWF
-        ON C.manga_id = MWF.manga_id
+    WHERE NOT EXISTS (SELECT 1 FROM scanlator_filtered_chapters SFC WHERE SFC.chapter_id = C._id)
 )
 SELECT
     M.*,
@@ -48,10 +34,6 @@ LEFT JOIN (
     FROM FilteredChapters
     LEFT JOIN history
     ON FilteredChapters._id = history.chapter_id
-    WHERE (
-        has_filter = 0
-        OR (filter_excluded = 0 AND rank = 1)
-    )
     GROUP BY manga_id
 ) AS C
 ON M._id = C.manga_id

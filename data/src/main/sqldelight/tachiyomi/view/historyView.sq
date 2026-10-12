@@ -42,29 +42,9 @@ LEFT JOIN(
         sum(read) AS readCount,
         sum(bookmark) AS bookmarkCount,
         sum(CASE WHEN bookmark = 1 AND read = 1 THEN 1 ELSE 0 END) AS bookmarkReadCount
-    FROM (
-        SELECT
-            C.manga_id,
-            C.read,
-            C.bookmark,
-            coalesce(SF.excluded, 0) AS filter_excluded,
-            ROW_NUMBER() OVER (
-                -- Unnumbered chapters (-1) are never copies of each other: give each its own partition.
-                PARTITION BY C.manga_id, C.chapter_number, CASE WHEN C.chapter_number < 0 THEN C._id END
-                ORDER BY
-                    CASE WHEN coalesce(SF.excluded, 0) = 1 THEN 1 ELSE 0 END ASC,
-                    coalesce(SF.priority, 10000000) ASC,
-                    C._id ASC
-            ) AS rank,
-            CASE WHEN MWF.manga_id IS NOT NULL THEN 1 ELSE 0 END AS has_filter
-        FROM chapters C
-        LEFT JOIN scanlator_filter SF
-            ON C.manga_id = SF.manga_id
-            AND C.scanlator IS SF.scanlator
-        LEFT JOIN (SELECT DISTINCT manga_id FROM scanlator_filter) MWF
-            ON C.manga_id = MWF.manga_id
-    )
-    WHERE (has_filter = 0 OR (filter_excluded = 0 AND rank = 1))
+    -- Chapters the scanlator filter keeps, precomputed in scanlator_filtered_chapters.sq.
+    FROM chapters C
+    WHERE NOT EXISTS (SELECT 1 FROM scanlator_filtered_chapters SFC WHERE SFC.chapter_id = C._id)
     GROUP BY manga_id
 ) AS C
 ON mangas._id = C.manga_id;
