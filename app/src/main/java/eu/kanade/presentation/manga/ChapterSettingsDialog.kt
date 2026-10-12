@@ -35,6 +35,8 @@ import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.core.common.preference.TriState
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
+import tachiyomi.presentation.core.components.CheckboxItem
 import tachiyomi.presentation.core.components.LabeledCheckbox
 import tachiyomi.presentation.core.components.RadioItem
 import tachiyomi.presentation.core.components.SortItem
@@ -53,6 +55,7 @@ fun ChapterSettingsDialog(
     onBookmarkedFilterChanged: (TriState) -> Unit,
     scanlatorFilterActive: Boolean,
     onScanlatorFilterClicked: () -> Unit,
+    onShowAllScanlatorsChanged: (Boolean) -> Unit,
     onSortModeChanged: (Long) -> Unit,
     onDisplayModeChanged: (Long) -> Unit,
     onSetAsDefault: (applyToExistingManga: Boolean) -> Unit,
@@ -109,6 +112,8 @@ fun ChapterSettingsDialog(
                         onBookmarkedFilterChanged = onBookmarkedFilterChanged,
                         scanlatorFilterActive = scanlatorFilterActive,
                         onScanlatorFilterClicked = onScanlatorFilterClicked,
+                        showAllScanlators = manga?.showAllScanlators ?: false,
+                        onShowAllScanlatorsChanged = onShowAllScanlatorsChanged,
                     )
                 }
                 1 -> {
@@ -139,6 +144,8 @@ private fun ColumnScope.FilterPage(
     onBookmarkedFilterChanged: (TriState) -> Unit,
     scanlatorFilterActive: Boolean,
     onScanlatorFilterClicked: () -> Unit,
+    showAllScanlators: Boolean,
+    onShowAllScanlatorsChanged: (Boolean) -> Unit,
 ) {
     TriStateItem(
         label = stringResource(MR.strings.label_downloaded),
@@ -158,6 +165,13 @@ private fun ColumnScope.FilterPage(
     ScanlatorFilterItem(
         active = scanlatorFilterActive,
         onClick = onScanlatorFilterClicked,
+    )
+    // Bypasses priority and hiding for this entry without losing the configured filter, for the
+    // occasional look at every release.
+    CheckboxItem(
+        label = stringResource(KMR.strings.action_show_all_scanlators),
+        checked = showAllScanlators,
+        onClick = { onShowAllScanlatorsChanged(!showAllScanlators) },
     )
 }
 

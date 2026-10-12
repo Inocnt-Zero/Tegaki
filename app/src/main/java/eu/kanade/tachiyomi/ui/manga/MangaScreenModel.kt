@@ -1647,6 +1647,13 @@ class MangaScreenModel(
      * Sets the bookmark filter and requests an UI update.
      * @param state whether to display only bookmarked chapters or all chapters.
      */
+    fun setShowAllScanlators(enabled: Boolean) {
+        val manga = successState?.manga ?: return
+        screenModelScope.launchNonCancellable {
+            setMangaChapterFlags.awaitSetShowAllScanlators(manga, enabled)
+        }
+    }
+
     fun setBookmarkedFilter(state: TriState) {
         val manga = successState?.manga ?: return
 
@@ -2087,8 +2094,9 @@ class MangaScreenModel(
                 }
             }
 
+            // Lit only while deduplication is actually applied, so "Show all scanlators" reads as off.
             val scanlatorFilterActive: Boolean
-                get() = scanlatorFilter.isNotEmpty()
+                get() = scanlatorFilter.isNotEmpty() && !manga.showAllScanlators
 
             val filterActive: Boolean
                 get() = scanlatorFilterActive || manga.chaptersFiltered()

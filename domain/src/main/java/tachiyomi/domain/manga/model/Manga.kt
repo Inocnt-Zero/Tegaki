@@ -115,6 +115,9 @@ data class Manga(
             else -> TriState.DISABLED
         }
 
+    val showAllScanlators: Boolean
+        get() = chapterFlags and CHAPTER_SHOW_ALL_SCANLATORS != 0L
+
     fun sortDescending(): Boolean {
         return chapterFlags and CHAPTER_SORT_DIR_MASK == CHAPTER_SORT_DESC
     }
@@ -148,6 +151,11 @@ data class Manga(
         const val CHAPTER_DISPLAY_NAME = 0x00000000L
         const val CHAPTER_DISPLAY_NUMBER = 0x00100000L
         const val CHAPTER_DISPLAY_MASK = 0x00100000L
+
+        // Turns off scanlator deduplication for this entry: every chapter from every scanlator is
+        // listed, hidden ones included. Tegaki-only, so it sits high in the range where upstream's
+        // sequentially added flags will not reach it.
+        const val CHAPTER_SHOW_ALL_SCANLATORS = 0x10000000L
 
         fun create() = Manga(
             id = -1L,

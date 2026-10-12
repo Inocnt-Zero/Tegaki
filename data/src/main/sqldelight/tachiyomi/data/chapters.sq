@@ -62,7 +62,8 @@ WITH FilteredChapters AS (
         C.*,
         coalesce(SF.excluded, 0) AS filter_excluded,
         ROW_NUMBER() OVER (
-            PARTITION BY C.manga_id, C.chapter_number
+            -- Unnumbered chapters (-1) are never copies of each other: give each its own partition.
+            PARTITION BY C.manga_id, C.chapter_number, CASE WHEN C.chapter_number < 0 THEN C._id END
             ORDER BY
                 CASE WHEN coalesce(SF.excluded, 0) = 1 THEN 1 ELSE 0 END ASC,
                 coalesce(SF.priority, 10000000) ASC,
@@ -101,7 +102,7 @@ JOIN mangas M ON C.manga_id = M._id
 WHERE :applyFilter = 0
 -- KMK -->
 OR (
-    (has_filter = 0 OR (filter_excluded = 0 AND rank = 1))
+    (has_filter = 0 OR (M.chapter_flags & :showAllScanlatorsMask) != 0 OR (filter_excluded = 0 AND rank = 1))
     AND ((M.chapter_flags & :bookmarkUnmask) = 0 OR C.bookmark = 0)
     AND ((M.chapter_flags & :bookmarkMask) = 0 OR C.bookmark = 1)
 );
@@ -137,7 +138,8 @@ WITH FilteredChapters AS (
         C.*,
         coalesce(SF.excluded, 0) AS filter_excluded,
         ROW_NUMBER() OVER (
-            PARTITION BY M.merge_id, C.chapter_number
+            -- Unnumbered chapters (-1) are never copies of each other: give each its own partition.
+            PARTITION BY M.merge_id, C.chapter_number, CASE WHEN C.chapter_number < 0 THEN C._id END
             ORDER BY
                 CASE WHEN coalesce(SF.excluded, 0) = 1 THEN 1 ELSE 0 END ASC,
                 coalesce(SF.priority, 10000000) ASC,
@@ -178,7 +180,7 @@ JOIN mangas MA ON MA._id = :mangaId
 WHERE :applyFilter = 0
 -- KMK -->
 OR (
-    (has_filter = 0 OR (filter_excluded = 0 AND rank = 1))
+    (has_filter = 0 OR (MA.chapter_flags & :showAllScanlatorsMask) != 0 OR (filter_excluded = 0 AND rank = 1))
     AND ((MA.chapter_flags & :bookmarkUnmask) = 0 OR FC.bookmark = 0)
     AND ((MA.chapter_flags & :bookmarkMask) = 0 OR FC.bookmark = 1)
 )

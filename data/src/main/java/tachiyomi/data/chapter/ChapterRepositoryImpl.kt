@@ -89,6 +89,7 @@ class ChapterRepositoryImpl(
             chaptersQueries.getChaptersByMangaId(
                 mangaId,
                 applyFilter.toLong(),
+                Manga.CHAPTER_SHOW_ALL_SCANLATORS,
                 // KMK -->
                 Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
                 Manga.CHAPTER_SHOW_BOOKMARKED,
@@ -128,6 +129,7 @@ class ChapterRepositoryImpl(
             chaptersQueries.getChaptersByMangaId(
                 mangaId,
                 applyFilter.toLong(),
+                Manga.CHAPTER_SHOW_ALL_SCANLATORS,
                 // KMK -->
                 Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
                 Manga.CHAPTER_SHOW_BOOKMARKED,
@@ -157,6 +159,7 @@ class ChapterRepositoryImpl(
             chaptersQueries.getMergedChaptersByMangaId(
                 mangaId,
                 applyFilter.toLong(),
+                Manga.CHAPTER_SHOW_ALL_SCANLATORS,
                 // KMK -->
                 Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
                 Manga.CHAPTER_SHOW_BOOKMARKED,
@@ -174,6 +177,7 @@ class ChapterRepositoryImpl(
             chaptersQueries.getMergedChaptersByMangaId(
                 mangaId,
                 applyFilter.toLong(),
+                Manga.CHAPTER_SHOW_ALL_SCANLATORS,
                 // KMK -->
                 Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
                 Manga.CHAPTER_SHOW_BOOKMARKED,

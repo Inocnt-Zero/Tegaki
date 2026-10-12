@@ -79,6 +79,7 @@ class MangaBackupCreator(
                 chaptersQueries.getChaptersByMangaId(
                     mangaId = manga.id,
                     applyFilter = 0, // false
+                    Manga.CHAPTER_SHOW_ALL_SCANLATORS, // irrelevant: unfiltered
                     // KMK -->
                     Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
                     Manga.CHAPTER_SHOW_BOOKMARKED,

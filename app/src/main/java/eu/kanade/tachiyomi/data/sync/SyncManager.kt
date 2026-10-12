@@ -264,6 +264,7 @@ class SyncManager(
             chaptersQueries.getChaptersByMangaId(
                 localManga.id,
                 0,
+                Manga.CHAPTER_SHOW_ALL_SCANLATORS, // irrelevant: unfiltered
                 // KMK -->
                 Manga.CHAPTER_SHOW_NOT_BOOKMARKED,
                 Manga.CHAPTER_SHOW_BOOKMARKED,

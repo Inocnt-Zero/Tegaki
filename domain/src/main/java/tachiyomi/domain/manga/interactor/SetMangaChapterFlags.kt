@@ -35,6 +35,18 @@ class SetMangaChapterFlags(
         )
     }
 
+    suspend fun awaitSetShowAllScanlators(manga: Manga, enabled: Boolean): Boolean {
+        return mangaRepository.update(
+            MangaUpdate(
+                id = manga.id,
+                chapterFlags = manga.chapterFlags.setFlag(
+                    if (enabled) Manga.CHAPTER_SHOW_ALL_SCANLATORS else 0L,
+                    Manga.CHAPTER_SHOW_ALL_SCANLATORS,
+                ),
+            ),
+        )
+    }
+
     suspend fun awaitSetDisplayMode(manga: Manga, flag: Long): Boolean {
         return mangaRepository.update(
             MangaUpdate(

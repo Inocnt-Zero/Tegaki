@@ -5,7 +5,8 @@ WITH FilteredChapters AS (
         C.*,
         coalesce(SF.excluded, 0) AS filter_excluded,
         ROW_NUMBER() OVER (
-            PARTITION BY C.manga_id, C.chapter_number
+            -- Unnumbered chapters (-1) are never copies of each other: give each its own partition.
+            PARTITION BY C.manga_id, C.chapter_number, CASE WHEN C.chapter_number < 0 THEN C._id END
             ORDER BY
                 CASE WHEN coalesce(SF.excluded, 0) = 1 THEN 1 ELSE 0 END ASC,
                 coalesce(SF.priority, 10000000) ASC,
@@ -104,7 +105,8 @@ LEFT JOIN(
             ME2.merge_id,
             coalesce(SF.excluded, 0) AS filter_excluded,
             ROW_NUMBER() OVER (
-                PARTITION BY ME2.merge_id, C.chapter_number
+                -- Unnumbered chapters (-1) are never copies of each other: give each its own partition.
+                PARTITION BY ME2.merge_id, C.chapter_number, CASE WHEN C.chapter_number < 0 THEN C._id END
                 ORDER BY
                     CASE WHEN coalesce(SF.excluded, 0) = 1 THEN 1 ELSE 0 END ASC,
                     coalesce(SF.priority, 10000000) ASC,
